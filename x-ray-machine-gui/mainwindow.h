@@ -2,11 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QImage>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 class QLabel;
 class QScrollArea;
+class QMenu;
+class QAction;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -20,10 +23,13 @@ public:
 
 private slots:
     void open();
+    void saveAs();
 private:
     void create();
     void settingImage(const QImage &newImage);
     void updateActions();
+    bool savingImage(const QString &);
+
 
     QImage image;
     QLabel *xRayImageLabel;
