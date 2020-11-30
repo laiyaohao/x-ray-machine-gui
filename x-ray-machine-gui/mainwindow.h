@@ -5,11 +5,13 @@
 #include <QImage>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+//namespace Ui { class MainWindow; }
+class QAction;
 class QLabel;
 class QScrollArea;
 class QMenu;
 class QAction;
+class QScrollBar;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -24,12 +26,18 @@ public:
 private slots:
     void open();
     void saveAs();
+    void normalSize();
+    void fittingToWindow();
+    void zoomIn();
+    void zoomOut();
+
 private:
     void create();
     void settingImage(const QImage &newImage);
     void updateActions();
-    bool savingImage(const QString &);
-
+    bool savingImage(const QString &fileName);
+    void scaleImage(double factor);
+    void adjustXRayScrollBar(QScrollBar *scrollBar, double factor);
 
     QImage image;
     QLabel *xRayImageLabel;
