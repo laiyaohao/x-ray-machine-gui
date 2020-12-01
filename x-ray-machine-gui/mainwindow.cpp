@@ -13,7 +13,7 @@
 #include <QColorSpace>
 #include <QMessageBox>
 #include <QScrollBar>
-
+#include <QToolBar>
 
 MainWindow::MainWindow(QWidget *parent) //MainWindow(QWidget *parent)
     : QMainWindow(parent), xRayImageLabel(new QLabel)
@@ -176,18 +176,23 @@ void MainWindow::zoomOut()
 void MainWindow::create()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-
-    QAction *openingAct = fileMenu->addAction(tr("Open..."),this,&MainWindow::open);
+    QToolBar *fileToolBar = addToolBar(tr("File"));
+    const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":resources/images/open.png"));
+    QAction *openingAct = new QAction(openIcon,tr("Open..."),this);
+    fileMenu->addAction(openingAct);
+    //tr("Open..."),this,&MainWindow::open);
+    connect(openingAct,&QAction::triggered,this,&MainWindow::open);
     openingAct->setShortcut((QKeySequence::Open));
+    fileToolBar->addAction(openingAct);
 
-
+    const QIcon saveIcon = QIcon::fromTheme("document-save",QIcon(":resources/images/save.png"));
     saveAsAct = fileMenu->addAction(tr("Save As..."),this, &MainWindow::saveAs);
     saveAsAct->setEnabled(false);
 
     fileMenu->addSeparator();
 
     QAction *exitAct = fileMenu->addAction(tr("Exit"), this, &QWidget::close);
-    exitAct->setShortcut(tr("Ctrl+Q"));
+    exitAct->setShortcut(tr("Ctrl+W"));
 
     QMenu *viewMenu = menuBar()->addMenu(tr("View"));
 
