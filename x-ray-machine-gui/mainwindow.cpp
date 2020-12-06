@@ -3,87 +3,77 @@
 
 #include <QApplication>
 #include <QLabel>
-#include <QScrollArea>
 #include <QScreen>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QStatusBar>
-#include <QImageReader>
-#include <QImageWriter>
-#include <QColorSpace>
-#include <QMessageBox>
-#include <QScrollBar>
+#include <QDebug>
 #include <QToolBar>
 #include <QHBoxLayout>
-#include <QPushButton>
 #include <QStandardPaths>
-#include <QDockWidget>
+#include <QMimeDatabase>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    //, ui(new Ui::MainWindow)
+//    , ui(new Ui::MainWindow)
 {
-    QWidget *cw = new QWidget();
 
-    QTabWidget *tabs = new QTabWidget(this);
-
-    QWidget *filetab = new QWidget();
-    QVBoxLayout *buttonLayout = new QVBoxLayout();
-    openButton = new QPushButton(tr("Open Images"));
-    cancelButton = new QPushButton(tr("Cancel"));
-    buttonLayout->addWidget(openButton);
-    buttonLayout->addWidget(cancelButton);
-    buttonLayout->addStretch();
-    filetab->setLayout(buttonLayout);
-    tabs->addTab(filetab,tr("Files"));
+    cw = new QWidget();
 
     frame = new QVBoxLayout();
     pictures = new QHBoxLayout();
     haventModifiedPics = new QVBoxLayout();
+
     modifiedPics = new QVBoxLayout();
 
     pictures->addLayout(haventModifiedPics);
     pictures->addLayout(modifiedPics);
     pictures->addStretch();
 
-    frame->addWidget(tabs);
+
     frame->addLayout(pictures);
-    frame->addSpacing(100);
+    frame->addStretch();
     cw->setLayout(frame);
     setCentralWidget(cw);
 
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    fileMenu = menuBar()->addMenu(tr("File"));
 
-    QToolBar *fileToolBar = addToolBar(tr("File"));
+    fileToolBar = addToolBar(tr("File"));
 
-
-
-//    addDockWidget(Qt::TopDockWidgetArea,fileDock);
     const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(":resources/images/open.png"));
-    QAction *openingAct = new QAction(openIcon,tr("Open..."),this);
-    fileMenu->addAction(openingAct);
-    //tr("Open..."),this,&MainWindow::open);
+    openingAct = new QAction(openIcon,tr("Open..."),this);
     connect(openingAct,&QAction::triggered,this,&MainWindow::open);
     openingAct->setShortcut((QKeySequence::Open));
+    fileMenu->addAction(openingAct);
     fileToolBar->addAction(openingAct);
 
-    const QIcon saveIcon = QIcon::fromTheme("document-save",QIcon(":resources/images/save.png"));
-    saveAsAct = fileMenu->addAction(tr("Save As..."),this, &MainWindow::saveAs);
-    saveAsAct->setEnabled(false);
+//    const QIcon saveIcon = QIcon::fromTheme("document-save",QIcon(":resources/images/save.png"));
+//    saveAsAct = fileMenu->addAction(tr("Save As..."),this, &MainWindow::saveAs);
+//    saveAsAct->setEnabled(false);
 
     fileMenu->addSeparator();
 
-    QAction *exitAct = fileMenu->addAction(tr("Exit"), this, &QWidget::close);
+    const QIcon exitIcon = QIcon::fromTheme("application-exit");
+    exitAct = fileMenu->addAction(exitIcon, tr("Exit"), this, &QWidget::close);
     exitAct->setShortcut(tr("Ctrl+W"));
+    fileToolBar->addAction(exitAct);
 
+    processMenu = menuBar()->addMenu(tr("Process..."));
+    processAct = new QAction(tr("Process"),this);
+    connect(processAct,&QAction::triggered,this,&MainWindow::process);
+    processMenu->addAction(processAct);
 
+    FPGAMenu = menuBar()->addMenu(tr("FPGA..."));
+    toFPGAAct = new QAction(tr("To FPGA"),this);
+    connect(toFPGAAct,&QAction::triggered,this,&MainWindow::toFPGA);
     resize(QGuiApplication::primaryScreen()->availableSize());
+    FPGAMenu->addAction(toFPGAAct);
 }
 
 
 
 
-void MainWindow::settingImage(const QImage &imageToSet)
+void MainWindow::process()
 {
 //    image = imageToSet;
 //    if (image.colorSpace().isValid())
@@ -91,8 +81,35 @@ void MainWindow::settingImage(const QImage &imageToSet)
 //    xRayImageLabel->setPixmap(QPixmap::fromImage(image));
 
 //    xRayScrollArea->setVisible(true);
+    QString folderOfImages = QFileDialog::getExistingDirectory(this, tr("Select Folder of images"),
+                            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    QString save = QFileDialog::getExistingDirectory(this, tr("Select location to save folder of images"),
+                            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    QDir imagesDir(folderOfImages);
+    QDir savedDir(save);
+//    qDebug() << save;
+//    qDebug() << folderOfImages;
+    QList <QFileInfo> fileInfo = imagesDir.entryInfoList();
+    for (auto info: fileInfo) {
+        // check if its base folder, like /home or /
+        // base folder's baseName is empty
+        // so if not empty, it should be the "real" files/folders
+        if (!info.baseName().isEmpty()) {
+            QMimeDatabase db;
+            QMimeType mime = db.mimeTypeForFile(info,QMimeDatabase::MatchContent);
+            // check if preferredsuffix is the file type we want
+            // can also use suffixes, but will return QStringList
+            // a list of QString
+            if (mime.preferredSuffix() != "mp3")
+            {
+                qDebug() << info.absoluteFilePath();
 
+            }
+        }
+        // we can now exclude the files with file format that we dont want
+        // what if have folders inside also
 
+    }
 }
 
 
@@ -100,7 +117,7 @@ void MainWindow::settingImage(const QImage &imageToSet)
 void MainWindow::open()
 {
 
-    const int imageLength = 800;
+    const int imageLength = 900;
     const int imageHeight = 400;
     QString file = QFileDialog::getOpenFileName(this, tr("Select Images"),
                             QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
@@ -109,39 +126,28 @@ void MainWindow::open()
     if (!file.isEmpty()) {
         selected = true;
     }
-    if (selected)
-    {
-    QLabel *imageLabel = new QLabel;
-    imageLabel->setFixedSize(imageLength,imageHeight);
-    QImage image(file);
-    QImage scaled = image.scaled(QSize(imageLength, imageHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    imageLabel->setPixmap(QPixmap::fromImage(scaled));
-    haventModifiedPics->addWidget(imageLabel);
-    labels.append(imageLabel);
-    //limit 2
-    if (labels.length() > 2) {
-        haventModifiedPics->removeWidget(labels.front());
-        labels.pop_front();
+    if (selected) {
+        QLabel *imageLabel = new QLabel;
+        imageLabel->setFixedSize(imageLength,imageHeight);
+        imageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        QImage image(file);
+        QImage scaled = image.scaled(QSize(imageLength, imageHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        imageLabel->setPixmap(QPixmap::fromImage(scaled));
+        haventModifiedPics->addWidget(imageLabel);
+        labels.append(imageLabel);
+        //limit 2
+        if (labels.length() > 2) {
+            haventModifiedPics->removeWidget(labels.front());
+            labels.front()->setParent(NULL);
+            labels.pop_front();
+        }
+
     }
-    }
+    haventModifiedPics->addStretch(100);
 }
 
-bool MainWindow::savingImage(const QString &fileName)
-{
-//    QImageWriter writer(fileName);
-//    if (writer.write(image)) {
-//        QMessageBox::information(this,QGuiApplication::applicationDisplayName(),
-//                                 tr("Cannot write %1: %2")
-//                                 .arg(QDir::toNativeSeparators(fileName),writer.errorString()));
-//        return false;
-//    }
-//    const QString msg = tr("Saved.");
-//    statusBar()->showMessage(msg);
-//    return true;
-    return true;
-}
 
-void MainWindow::saveAs()
+void MainWindow::toFPGA()
 {
 //    QFileDialog dialog(this,tr("Save File As"));
 //    initializeImageFileDialog(dialog, QFileDialog::AcceptSave);
