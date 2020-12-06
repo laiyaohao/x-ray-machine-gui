@@ -1,0 +1,4 @@
+/home/laiyaohao/ME4101A/x-ray-machine-gui/x-ray-machine-gui/CMakeFiles/rebuild_cache.dir
+/home/laiyaohao/ME4101A/x-ray-machine-gui/x-ray-machine-gui/CMakeFiles/edit_cache.dir
+/home/laiyaohao/ME4101A/x-ray-machine-gui/x-ray-machine-gui/CMakeFiles/x-ray-machine-gui.dir
+/home/laiyaohao/ME4101A/x-ray-machine-gui/x-ray-machine-gui/CMakeFiles/x-ray-machine-gui_autogen.dir
