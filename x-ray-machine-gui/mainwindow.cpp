@@ -13,6 +13,11 @@
 #include <QStandardPaths>
 #include <QMimeDatabase>
 
+// following include the packages needed for image
+// transformation
+
+#include "itkImage.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 //    , ui(new Ui::MainWindow)
@@ -127,6 +132,7 @@ void MainWindow::open()
         selected = true;
     }
     if (selected) {
+        qDebug() << file;
         QLabel *imageLabel = new QLabel;
         imageLabel->setFixedSize(imageLength,imageHeight);
         imageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
